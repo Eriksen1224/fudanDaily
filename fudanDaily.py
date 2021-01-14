@@ -9,7 +9,6 @@ from datetime import datetime, timezone, timedelta
 
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
-PUSH_KEY = os.getenv("PUSH_KEY")
 
 fudan_daily_url = "https://zlapp.fudan.edu.cn/site/ncov/fudanDaily"
 login_url = "https://uis.fudan.edu.cn/authserver/login?service=https%3A%2F%2Fzlapp.fudan.edu.cn%2Fa_fudanzlapp%2Fapi%2Fsso%2Findex%3Fredirect%3Dhttps%253A%252F%252Fzlapp.fudan.edu.cn%252Fsite%252Fncov%252FfudanDaily%26from%3Dwap"
@@ -90,28 +89,10 @@ def save(_session, _payload):
     return _session.post(save_url, data=_payload)
 
 
-def notify(_title, _message=None):
-    if not PUSH_KEY:
-        print("未配置PUSH_KEY！")
-        return
-
-    if not _message:
-        _message = _title
-
-    print(_title)
-    print(_message)
-
-    _response = requests.post(f"https://sc.ftqq.com/{PUSH_KEY}.send", {"text": _title, "desp": _message})
-
-    if _response.status_code == 200:
-        print(f"发送通知状态：{_response.content.decode('utf-8')}")
-    else:
-        print(f"发送通知失败：{_response.status_code}")
-
 
 if __name__ == "__main__":
     if not USERNAME or not PASSWORD:
-        notify("请正确配置用户名和密码！")
+        print("请正确配置用户名和密码！")
         sys.exit()
 
     login_info = {
@@ -129,18 +110,16 @@ if __name__ == "__main__":
         # print(payload_str)
 
         if payload.get("date") == get_today_date():
-            notify(f"今日已打卡：{payload.get('area')}", f"今日已打卡：{payload_str}")
+            print("今日已打卡：", payload.get('area'), "今日已打卡：",payload_str)
             sys.exit()
 
         time.sleep(5)
         response = save(session, payload)
 
         if response.status_code == 200 and response.text == '{"e":0,"m":"操作成功","d":{}}':
-            notify(f"打卡成功：{payload.get('area')}", payload_str)
-            print('打卡成功')
+            print("打卡成功：", payload.get('area'))
         else:
-            notify("打卡失败，请手动打卡", response.text)
-            print('打卡失败')
+            print("打卡失败，请手动打卡")
 
     except Exception as e:
         notify("打卡失败，请手动打卡", str(e))
