@@ -88,38 +88,49 @@ def get_payload_str(_payload):
 def save(_session, _payload):
     return _session.post(save_url, data=_payload)
 
+def notify(_title, _message=None):
+    if not PUSH_KEY:
+        return
+    if not _message:
+        _message = _title
+    print(_title)
+    print(_message)
+    _response = requests.post(f"https://sc.ftqq.com/{PUSH_KEY}.send", {"text": _title, "desp": _message})
+    if _response.status_code == 200:
+        print(f"发送通知状态：{_response.content.decode('utf-8')}")
+    else:
+        print(f"发送通知失败：{_response.status_code}")
 
-
+              
 if __name__ == "__main__":
     if not USERNAME or not PASSWORD:
-        print("请正确配置用户名和密码！")
+        notify("请正确配置用户名和密码！")
         sys.exit()
-
     login_info = {
         "username": USERNAME,
         "password": PASSWORD
     }
-
+    print(USERNAME)
+    print(PASSWORD)
     try:
         session = get_session(login_info)
         historical_info = get_historical_info(session)
         save_log(session)
-
         payload = get_payload(historical_info)
         payload_str = get_payload_str(payload)
         # print(payload_str)
-
         if payload.get("date") == get_today_date():
-            print("今日已打卡：", payload.get('area'), "今日已打卡：",payload_str)
+            notify(f"今日已打卡：{payload.get('area')}", f"今日已打卡：{payload_str}")
             sys.exit()
-
         time.sleep(5)
         response = save(session, payload)
 
         if response.status_code == 200 and response.text == '{"e":0,"m":"操作成功","d":{}}':
-            print("打卡成功：", payload.get('area'))
+            notify(f"打卡成功：{payload.get('area')}", payload_str)
+            print('打卡成功')
         else:
-            print("打卡失败，请手动打卡")
+            notify("打卡失败，请手动打卡", response.text)
+            print('打卡失败')
 
     except Exception as e:
         notify("打卡失败，请手动打卡", str(e))
