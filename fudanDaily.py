@@ -120,7 +120,7 @@ if __name__ == "__main__":
         # print(payload_str)
         if payload.get("date") == get_today_date():
             #notify(f"今日已打卡：{payload.get('area')}", f"今日已打卡：{payload_str}")
-            print('今日已打卡")
+            print('今日已打卡')
             sys.exit()
         time.sleep(5)
         response = save(session, payload)
