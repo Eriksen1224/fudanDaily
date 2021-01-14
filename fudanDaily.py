@@ -111,8 +111,6 @@ if __name__ == "__main__":
         "username": USERNAME,
         "password": PASSWORD
     }
-    print(USERNAME)
-    print(PASSWORD)
     try:
         session = get_session(login_info)
         historical_info = get_historical_info(session)
@@ -121,17 +119,20 @@ if __name__ == "__main__":
         payload_str = get_payload_str(payload)
         # print(payload_str)
         if payload.get("date") == get_today_date():
-            notify(f"今日已打卡：{payload.get('area')}", f"今日已打卡：{payload_str}")
+            #notify(f"今日已打卡：{payload.get('area')}", f"今日已打卡：{payload_str}")
+            print('今日已打卡：{}".format(payload.get('area')))
             sys.exit()
         time.sleep(5)
         response = save(session, payload)
+        
+        print(response.status_code)
 
         if response.status_code == 200 and response.text == '{"e":0,"m":"操作成功","d":{}}':
-            notify(f"打卡成功：{payload.get('area')}", payload_str)
-            print('打卡成功')
+            #notify(f"打卡成功：{payload.get('area')}", payload_str)
+            print('打卡成功', payload.get('area'))     
         else:
-            notify("打卡失败，请手动打卡", response.text)
-            print('打卡失败')
+            print("打卡失败，请手动打卡", response.text)
+            print('打卡失败', response)
 
     except Exception as e:
-        notify("打卡失败，请手动打卡", str(e))
+        print("打卡失败，请手动打卡", str(e))
