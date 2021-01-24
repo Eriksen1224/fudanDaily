@@ -6,6 +6,10 @@ import hashlib
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone, timedelta
+from smtplib import SMTP
+from email.header import Header
+from email.mime.text import MIMEText
+
 
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
@@ -101,7 +105,21 @@ def notify(_title, _message=None):
         print(f"发送通知状态：{_response.content.decode('utf-8')}")
     else:
         print(f"发送通知失败：{_response.status_code}")
+             
+def send_mail():
+    # 请自行修改下面的邮件发送者和接收者
+    sender = '791904901@qq.com'  #发送者的邮箱地址
+    receivers = ['13696430100@qq.com']  #接收者的邮箱地址
+    message = MIMEText('HelloPython', _subtype='plain', _charset='utf-8')
+    message['From'] = Header('Your Old Friend', 'utf-8')  #邮件的发送者
+    message['To'] = Header('Darling Jay', 'utf-8')   #邮件的接收者
+    message['Subject'] = Header('To darling Jay', 'utf-8') #邮件的标题
+    smtper = SMTP('smtp.qq.com')
+    # 请自行修改下面的登录口令
 
+    smtper.login(sender, 'ezyxlluwykxtbebe')  #QQ邮箱smtp的授权码
+    smtper.sendmail(sender, receivers, message.as_string())
+    
               
 if __name__ == "__main__":
     if not USERNAME or not PASSWORD:
@@ -133,6 +151,7 @@ if __name__ == "__main__":
         else:
             print("打卡失败，请手动打卡", response.text)
             print('打卡失败')
+        send_mail()
 
     except Exception as e:
         print("打卡失败，请手动打卡", str(e))
