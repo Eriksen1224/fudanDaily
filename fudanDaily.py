@@ -93,27 +93,22 @@ def get_payload_str(_payload):
 def save(_session, _payload):
     return _session.post(save_url, data=_payload)
 
-def notify(_title, _message=None):
-    if not PUSH_KEY:
-        return
-    if not _message:
-        _message = _title
-    print(_title)
-    print(_message)
-    _response = requests.post(f"https://sc.ftqq.com/{PUSH_KEY}.send", {"text": _title, "desp": _message})
-    if _response.status_code == 200:
-        print(f"发送通知状态：{_response.content.decode('utf-8')}")
-    else:
-        print(f"发送通知失败：{_response.status_code}")
              
-def send_mail():
+def send_mail(payload, status):
     # 请自行修改下面的邮件发送者和接收者
     sender = '791904901@qq.com'  #发送者的邮箱地址
     receivers = ['13696430100@qq.com']  #接收者的邮箱地址
-    message = MIMEText('HelloPython', _subtype='plain', _charset='utf-8')
-    message['From'] = Header('Your Old Friend', 'utf-8')  #邮件的发送者
-    message['To'] = Header('Darling Jay', 'utf-8')   #邮件的接收者
-    message['Subject'] = Header('To darling Jay', 'utf-8') #邮件的标题
+
+    if status == 1:
+        message = MIMEText('打卡地点：{}\n日期{}'.format(payload.get('address'), payload.get('date')), _subtype='plain', _charset='utf-8')
+        message['Subject'] = Header('今日打卡成功', 'utf-8') #邮件的标题
+        message['From'] = Header('平安复旦', 'utf-8')  #邮件的发送者
+        message['To'] = Header('平安复旦', 'utf-8')   #邮件的接收者
+    else:
+        message = MIMEText('今日打卡失败，请手动打卡', _subtype='plain', _charset='utf-8')
+        message['Subject'] = Header('今日打卡失败', 'utf-8') #邮件的标题
+        message['From'] = Header('平安复旦', 'utf-8')  #邮件的发送者
+        message['To'] = Header('平安复旦', 'utf-8')   #邮件的接收者
     smtper = SMTP('smtp.qq.com')
     # 请自行修改下面的登录口令
 
@@ -123,7 +118,7 @@ def send_mail():
               
 if __name__ == "__main__":
     if not USERNAME or not PASSWORD:
-        notify("请正确配置用户名和密码！")
+        print("请正确配置用户名和密码！")
         sys.exit()
     login_info = {
         "username": USERNAME,
@@ -137,21 +132,19 @@ if __name__ == "__main__":
         payload_str = get_payload_str(payload)
         # print(payload_str)
         if payload.get("date") == get_today_date():
-            #notify(f"今日已打卡：{payload.get('area')}", f"今日已打卡：{payload_str}")
             print('今日已打卡')
+            send_mail(payload, 1)
             sys.exit()
         time.sleep(5)
         response = save(session, payload)
-        
-        print(response.status_code)
 
         if response.status_code == 200 and response.text == '{"e":0,"m":"操作成功","d":{}}':
-            #notify(f"打卡成功：{payload.get('area')}", payload_str)
-            print('打卡成功')     
+            print('打卡成功')
+            send_mail(payload, 1)     
         else:
             print("打卡失败，请手动打卡", response.text)
-            print('打卡失败')
-        send_mail()
+            send_mail(payload, 0)
 
     except Exception as e:
         print("打卡失败，请手动打卡", str(e))
+        send_mail(payload, 0)
