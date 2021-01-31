@@ -100,18 +100,16 @@ def send_mail(payload, status):
     receivers = ['13696430100@qq.com']  #接收者的邮箱地址
 
     if status == 1:
-        message = MIMEText('打卡地点：{}\n日期{}'.format(payload.get('address'), payload.get('date')), _subtype='plain', _charset='utf-8')
-        message['Subject'] = Header('今日打卡成功', 'utf-8') #邮件的标题
-        message['From'] = Header('平安复旦', 'utf-8')  #邮件的发送者
-        message['To'] = Header('平安复旦', 'utf-8')   #邮件的接收者
+        message = MIMEText('打卡地点：{}\n日期{}'.format(payload.get('address'), get_today_date()), _subtype='plain', _charset='utf-8')
+        message['Subject'] = Header('今日打卡成功', 'utf-8') 
+        message['From'] = Header('平安复旦', 'utf-8')  
+        message['To'] = Header('平安复旦', 'utf-8')   
     else:
         message = MIMEText('今日打卡失败，请手动打卡', _subtype='plain', _charset='utf-8')
-        message['Subject'] = Header('今日打卡失败', 'utf-8') #邮件的标题
-        message['From'] = Header('平安复旦', 'utf-8')  #邮件的发送者
-        message['To'] = Header('平安复旦', 'utf-8')   #邮件的接收者
+        message['Subject'] = Header('今日打卡失败', 'utf-8') 
+        message['From'] = Header('平安复旦', 'utf-8')  
+        message['To'] = Header('平安复旦', 'utf-8')   
     smtper = SMTP('smtp.qq.com')
-    # 请自行修改下面的登录口令
-
     smtper.login(sender, 'ezyxlluwykxtbebe')  #QQ邮箱smtp的授权码
     smtper.sendmail(sender, receivers, message.as_string())
     
